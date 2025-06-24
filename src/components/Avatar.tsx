@@ -14,10 +14,19 @@ export const Avatar: React.FC<AvatarProps> = ({
   username 
 }) => {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [imageSrc, setImageSrc] = useState<string | undefined>(src);
 
+  const sizeClasses = {
+    small: 'w-8 h-8 text-xs',
+    medium: 'w-16 h-16 text-sm',
+    large: 'w-24 h-24 text-lg'
+  };
+
+  // Reset state when src changes
   useEffect(() => {
     if (src) {
       setImageState('loading');
+      setImageSrc(src);
     } else {
       setImageState('error');
     }
@@ -29,8 +38,18 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   const handleImageError = () => {
     setImageState('error');
+    // Try alternative image sources
+    if (imageSrc === src) {
+      // Try with different parameters or CDN
+      const altSrc = src?.replace('200x200o', '160x160o');
+      if (altSrc && altSrc !== src) {
+        setImageSrc(altSrc);
+        return;
+      }
+    }
   };
 
+  // Generate initials from username
   const getInitials = (name: string) => {
     return name
       .split(/[-_\s]/)
@@ -39,27 +58,23 @@ export const Avatar: React.FC<AvatarProps> = ({
       .join('');
   };
 
-  const sizeClasses = {
-    small: 'avatar-small',
-    medium: 'avatar-medium',
-    large: 'avatar-large'
-  };
+  const initials = getInitials(username);
 
   return (
     <div className={`avatar ${sizeClasses[size]}`}>
-      {imageState === 'loaded' && src ? (
+      {imageState === 'loaded' && imageSrc ? (
         <img
-          src={src}
+          src={imageSrc}
           alt={alt}
           className="avatar-image"
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
-      ) : imageState === 'loading' && src ? (
+      ) : imageState === 'loading' && imageSrc ? (
         <>
           <div className="avatar-skeleton" />
           <img
-            src={src}
+            src={imageSrc}
             alt={alt}
             className="avatar-image-hidden"
             onLoad={handleImageLoad}
@@ -68,7 +83,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         </>
       ) : (
         <div className="avatar-fallback">
-          <span className="avatar-initials">{getInitials(username)}</span>
+          <span className="avatar-initials">{initials}</span>
         </div>
       )}
     </div>

@@ -48,6 +48,12 @@ export const GrandmastersList: React.FC = () => {
     }
   }, [search, page, updateUrl]);
 
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      updateUrl({ page: 1 });
+    }
+  }, [page, totalPages, updateUrl]);
+
   const handleSearchChange = (newSearch: string) => {
     updateUrl({ search: newSearch, page: 1 });
   };
@@ -59,6 +65,10 @@ export const GrandmastersList: React.FC = () => {
 
   const handlePageSizeChange = (newPageSize: number) => {
     updateUrl({ pageSize: newPageSize, page: 1 });
+  };
+
+  const handleMouseEnter = (username: string) => {
+    prefetchPlayerProfile(username);
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -74,42 +84,64 @@ export const GrandmastersList: React.FC = () => {
 
   return (
     <div className="page-container">
-      <h1>Chess Grandmasters ({grandmasters.length.toLocaleString()})</h1>
-      {isFetching && <div className="updating-indicator">Updating...</div>}
-      
-      <div className="controls">
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search grandmasters..."
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="search-input"
-          />
+      <div className="hero-section">
+        <div className="hero-content">
+          <div className="hero-icon">♔</div>
+          <h1 className="hero-title">Chess Grandmasters Directory</h1>
+          <p className="hero-subtitle">
+            Explore the world's finest chess masters from Chess.com
+          </p>
+          <div className="hero-stats">
+            <div className="stat-badge">
+              <span className="stat-number">{grandmasters.length.toLocaleString()}</span>
+              <span className="stat-label">Grandmasters</span>
+            </div>
+            {isFetching && <div className="updating-badge">Updating...</div>}
+          </div>
+        </div>
+      </div>
+
+      <div className="controls-section">
+        <div className="search-section">
+          <div className="search-wrapper">
+            <input
+              type="text"
+              placeholder="Search by username..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="search-input-modern"
+            />
+            {search && (
+              <button 
+                onClick={() => handleSearchChange('')}
+                className="clear-search-modern"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {search && (
-            <button 
-              onClick={() => handleSearchChange('')}
-              className="clear-search"
-            >
-              ✕
-            </button>
+            <div className="search-results-info">
+              Found <strong>{filteredGrandmasters.length}</strong> grandmasters matching "<em>{search}</em>"
+            </div>
           )}
         </div>
 
-        <div className="page-size-selector">
-          <label htmlFor="pageSize">Show: </label>
-          <select
-            id="pageSize"
-            value={pageSize}
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-            className="page-size-select"
-          >
-            {PAGE_SIZE_OPTIONS.map(size => (
-              <option key={size} value={size}>
-                {size} per page
-              </option>
-            ))}
-          </select>
+        <div className="view-controls">
+          <div className="page-size-control">
+            <label htmlFor="pageSize" className="control-label">Items per page:</label>
+            <select
+              id="pageSize"
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+              className="page-size-select-modern"
+            >
+              {PAGE_SIZE_OPTIONS.map(size => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -123,32 +155,48 @@ export const GrandmastersList: React.FC = () => {
         totalItems={totalItems}
       />
 
-      <div className="grandmasters-grid">
-        {currentData.map((username: string) => (
-          <Link 
-            key={username} 
-            to={`/grandmaster/${username}?${new URLSearchParams({ from: page.toString(), search }).toString()}`}
-            className="grandmaster-card"
-            onMouseEnter={() => prefetchPlayerProfile(username)}
+      <div className="grandmasters-grid-modern">
+        {currentData.map((username: string, index: number) => (
+          <div
+            key={username}
+            className="grandmaster-card-modern"
+            style={{ animationDelay: `${index * 50}ms` }}
           >
-            <Avatar
-              username={username}
-              alt={`${username} avatar`}
-              size="small"
-            />
-            <div className="grandmaster-username">{username}</div>
-          </Link>
+            <Link 
+              to={`/grandmaster/${username}?${new URLSearchParams({ from: page.toString(), search }).toString()}`}
+              className="card-link"
+              onMouseEnter={() => handleMouseEnter(username)}
+            >
+              <div className="card-header">
+                <Avatar
+                  username={username}
+                  alt={`${username} avatar`}
+                  size="medium"
+                />
+                <div className="gm-badge">GM</div>
+              </div>
+              <div className="card-content">
+                <h3 className="username-title">{username}</h3>
+                <p className="user-subtitle">Chess Grandmaster</p>
+              </div>
+              <div className="card-footer">
+                <div className="view-profile-text">View Profile →</div>
+              </div>
+            </Link>
+          </div>
         ))}
       </div>
 
       {currentData.length === 0 && search && (
-        <div className="no-results">
-          <p>No grandmasters found matching "{search}"</p>
+        <div className="no-results-modern">
+          <div className="no-results-icon">🔍</div>
+          <h3>No grandmasters found</h3>
+          <p>No results for "<strong>{search}</strong>"</p>
           <button 
             onClick={() => handleSearchChange('')}
-            className="clear-search-button"
+            className="clear-search-button-modern"
           >
-            Clear search
+            Clear search and view all
           </button>
         </div>
       )}

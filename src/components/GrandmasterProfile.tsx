@@ -57,97 +57,183 @@ export const GrandmasterProfile: React.FC = () => {
     return <ErrorMessage message="Profile not found" />;
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'premium': return '#f39c12';
+      case 'staff': return '#e74c3c';
+      case 'mod': return '#9b59b6';
+      default: return '#95a5a6';
+    }
+  };
+
   return (
     <div className="profile-page">
-      <div className="profile-nav">
-        <Link to={backLink()} className="back-link">
-          ← Back to Grandmasters List
-          {fromSearch && <span className="back-context"> (search: "{fromSearch}")</span>}
+      <div className="profile-navigation">
+        <Link to={backLink()} className="back-button">
+          <span className="back-icon">←</span>
+          <span>Back to Directory</span>
+          {fromSearch && <span className="nav-context">({fromSearch})</span>}
         </Link>
-        <div className="profile-actions">
-          {isFetching && <span className="fetching-indicator">Updating...</span>}
+        <div className="nav-actions">
+          {isFetching && <div className="updating-indicator">Syncing...</div>}
           <button 
             onClick={handleRefresh} 
-            className="refresh-button"
+            className="refresh-button-modern"
             disabled={isFetching}
           >
+            <span className="refresh-icon">⟳</span>
             Refresh
           </button>
         </div>
       </div>
-      
-      <div className="profile-header">
-        <Avatar
-          src={profile.avatar}
-          alt={`${profile.username} avatar`}
-          size="large"
-          username={profile.username}
-        />
+
+      <div className="profile-header-modern">
+        <div className="profile-banner">
+          <div className="banner-pattern"></div>
+        </div>
         <div className="profile-info">
-          <h1>{profile.name || profile.username}</h1>
-          <p className="username">@{profile.username}</p>
-          {profile.title && <span className="title-badge">{profile.title}</span>}
+          <div className="avatar-section">
+            <Avatar
+              src={profile.avatar}
+              alt={`${profile.username} avatar`}
+              size="large"
+              username={profile.username}
+            />
+            <div className="title-badge-large">GM</div>
+          </div>
+          <div className="profile-details-header">
+            <h1 className="profile-name">{profile.name || profile.username}</h1>
+            <p className="profile-username">@{profile.username}</p>
+            <div className="profile-badges">
+              <span 
+                className="status-badge"
+                style={{ backgroundColor: getStatusColor(profile.status) }}
+              >
+                {profile.status}
+              </span>
+              {profile.is_streamer && (
+                <span className="streamer-badge">
+                  📺 Streamer
+                </span>
+              )}
+              {profile.title && profile.title !== 'GM' && (
+                <span className="additional-title-badge">{profile.title}</span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="profile-stats">
-        <div className="stat-card">
-          <h3>Followers</h3>
-          <p>{profile.followers.toLocaleString()}</p>
-        </div>
-        
-        <div className="stat-card">
-          <h3>Status</h3>
-          <p>{profile.status}</p>
-        </div>
-        
-        {profile.fide && (
-          <div className="stat-card">
-            <h3>FIDE Rating</h3>
-            <p>{profile.fide}</p>
-          </div>
-        )}
-      </div>
-
-      <div className="profile-details">
-        {profile.location && (
-          <div className="detail-item">
-            <strong>Location:</strong> {profile.location}
-          </div>
-        )}
-        
-        <div className="detail-item">
-          <strong>Joined Chess.com:</strong> {formatDate(profile.joined)}
-        </div>
-        
-        <div className="detail-item">
-          <strong>Last Online:</strong> {formatDate(profile.last_online)}
-        </div>
-        
-        <div className="detail-item">
-          <TimeSinceLastOnline lastOnlineTimestamp={profile.last_online} />
-        </div>
-        
-        {profile.is_streamer && (
-          <div className="detail-item">
-            <strong>Streamer:</strong> Yes
-            {profile.twitch_url && (
-              <a href={profile.twitch_url} target="_blank" rel="noopener noreferrer">
-                Watch on Twitch
-              </a>
+      <div className="profile-main-content">
+        <div className="profile-left-column">
+          <div className="stats-grid-modern">
+            <div className="stat-card-modern primary">
+              <div className="stat-icon">👥</div>
+              <div className="stat-content">
+                <div className="stat-number">{profile.followers.toLocaleString()}</div>
+                <div className="stat-label">Followers</div>
+              </div>
+            </div>
+            
+            <div className="stat-card-modern">
+              <div className="stat-icon">🆔</div>
+              <div className="stat-content">
+                <div className="stat-number">#{profile.player_id}</div>
+                <div className="stat-label">Player ID</div>
+              </div>
+            </div>
+            
+            {profile.fide && (
+              <div className="stat-card-modern highlight">
+                <div className="stat-icon">🏆</div>
+                <div className="stat-content">
+                  <div className="stat-number">{profile.fide}</div>
+                  <div className="stat-label">FIDE Rating</div>
+                </div>
+              </div>
             )}
+            
+            <div className="stat-card-modern">
+              <div className="stat-icon">📅</div>
+              <div className="stat-content">
+                <div className="stat-number">{formatDate(profile.joined)}</div>
+                <div className="stat-label">Joined</div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="external-links">
-        <a href={profile.url} target="_blank" rel="noopener noreferrer" className="chess-com-link">
-          View on Chess.com
-        </a>
-      </div>
+          <div className="info-card">
+            <div className="info-card-header">
+              <h3><span className="info-icon">ℹ️</span> Profile Information</h3>
+            </div>
+            <div className="info-list">
+              {profile.location && (
+                <div className="info-item">
+                  <span className="info-key">📍 Location</span>
+                  <span className="info-value">{profile.location}</span>
+                </div>
+              )}
+              <div className="info-item">
+                <span className="info-key">🗓️ Member Since</span>
+                <span className="info-value">{formatDate(profile.joined)}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-key">🕐 Last Online</span>
+                <span className="info-value">{formatDate(profile.last_online)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div className="data-info">
-        <small>Last updated: {new Date(dataUpdatedAt).toLocaleString()}</small>
+        <div className="profile-right-column">
+          <div className="info-card live-status">
+            <div className="info-card-header">
+              <h3><span className="info-icon">⏰</span> Live Status</h3>
+            </div>
+            <div className="live-timer">
+              <TimeSinceLastOnline lastOnlineTimestamp={profile.last_online} />
+            </div>
+          </div>
+
+          {profile.is_streamer && (
+            <div className="info-card streaming">
+              <div className="info-card-header">
+                <h3><span className="info-icon">📺</span> Streaming</h3>
+              </div>
+              <p className="streaming-text">This grandmaster streams chess content!</p>
+              {profile.twitch_url && (
+                <a 
+                  href={profile.twitch_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="twitch-button"
+                >
+                  <span className="twitch-icon">📺</span>
+                  Watch on Twitch
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="action-section">
+          <a 
+            href={profile.url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="primary-action-button"
+          >
+            <span className="action-icon">🔗</span>
+            View on Chess.com
+          </a>
+        </div>
+
+        <div className="profile-footer">
+          <div className="last-updated">
+            <span className="update-icon">🔄</span>
+            Last updated: {new Date(dataUpdatedAt).toLocaleString()}
+          </div>
+        </div>
       </div>
     </div>
   );
